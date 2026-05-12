@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Improved Project
 
-## Getting Started
+This app is intentionally scoped only to improved_midterm/improved_project.
+Files in improved_midterm/Refs are reference material and are not runtime dependencies.
 
-First, run the development server:
+## Quick Start With Docker
+
+Run from this folder:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up --build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+What starts automatically:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- app service at http://localhost:3000
+- postgres service at localhost:5432
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+No separate manual database start is required. On startup, the app service runs Prisma migrations and seed checks before starting Next.js.
 
-## Learn More
+## Local Run
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
+npm run db:migrate
+npm run db:seed
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Setup
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy .env.example to .env and adjust secrets as needed.
 
-## Deploy on Vercel
+Required variables:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- DATABASE_URL
+- AUTH_SECRET
+- AUTH_URL
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Core Commands
+
+```bash
+# quality
+npm run lint
+npm run typecheck
+npm run build
+
+# docker helpers
+npm run docker:up
+npm run docker:logs
+npm run docker:down
+
+# database
+npm run db:migrate
+npm run db:seed
+npm run db:validate-data
+npm run db:import
+```
+
+## Operational Notes
+
+- For a clean database reset, run `docker compose down -v` before `docker compose up --build -d`.
+- API smoke checks should run against the containerized app on port 3000.
+- On Windows PowerShell, `Invoke-WebRequest` may prompt for script parsing; use `-UseBasicParsing` when needed.
+
+## Dataset Import Workflow (Phase 4)
+
+1. Place source JSON files in data/datasets.
+2. Validate format:
+
+```bash
+npm run db:validate-data
+```
+
+3. Import to create a new dataset version and state profiles:
+
+```bash
+npm run db:import
+```
+
+## Rollback and Reimport Strategy
+
+- Dataset imports are versioned; do not mutate old dataset versions.
+- If a bad import occurs, mark the bad version as inactive and import a corrected file as a new version.
+- Reproducibility is preserved by storing and referencing dataset_version_id.
+
+## Current Stack
+
+- Next.js 16 (App Router, TypeScript)
+- PostgreSQL 16 (Docker service)
+- Prisma ORM
+- Auth.js credentials auth
+- Docker Compose for one-command startup
+
+Protected route enforcement is handled server-side in route/page handlers, which avoids edge runtime constraints with Prisma.
+
+## Important Implementation Notes
+
+- Prisma is on v7 and uses `@prisma/adapter-pg` with `pg` for runtime client initialization.
+- `datasource.url` is intentionally not present in `prisma/schema.prisma`; Prisma connection URL is configured via `prisma.config.ts`.
+- Docker image generation must run `npx prisma generate` before `npm run build`.
+- Auth is pinned to `next-auth@5.0.0-beta.31` for the App Router `src/auth.ts` export pattern.
+- Keep route protection server-side for Prisma-backed pages and APIs; avoid edge middleware imports that pull Prisma into edge runtime.
+- Never commit real API keys. Keep secrets in local `.env` only.
+
+## Planning Decisions
+
+See ARCHITECTURE_DECISIONS.md for the locked Docker-first implementation choices.
+
+## Known Limitations
+
+- AI route uses OpenAI only when `OPENAI_API_KEY` is set; otherwise it falls back to deterministic local summaries.
+- Auth.js uses `next-auth@5` beta APIs; future package upgrades may require minor config changes.
+- Dashboard currently provides baseline saved snapshot views and JSON restore context, not advanced chart replay UI.

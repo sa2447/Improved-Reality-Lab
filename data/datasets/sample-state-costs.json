@@ -1,0 +1,40 @@
+{
+  "sourceName": "phase4-sample-dataset",
+  "sourceUrl": "https://example.com/public-data/sample",
+  "effectiveDate": "2026-01-01",
+  "states": [
+    {
+      "stateCode": "NY",
+      "housing": 2400,
+      "food": 750,
+      "transportation": 420,
+      "healthcare": 380,
+      "utilities": 290,
+      "taxes": 510,
+      "minimumWage": 16.5,
+      "livingWage": 28.25
+    },
+    {
+      "stateCode": "NJ",
+      "housing": 2100,
+      "food": 700,
+      "transportation": 390,
+      "healthcare": 360,
+      "utilities": 260,
+      "taxes": 460,
+      "minimumWage": 15.49,
+      "livingWage": 25.4
+    },
+    {
+      "stateCode": "CT",
+      "housing": 1900,
+      "food": 670,
+      "transportation": 340,
+      "healthcare": 350,
+      "utilities": 250,
+      "taxes": 430,
+      "minimumWage": 15.69,
+      "livingWage": 24.15
+    }
+  ]
+}
